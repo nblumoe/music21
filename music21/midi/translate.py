@@ -2013,6 +2013,7 @@ def channelInstrumentData(
     # store program numbers
     # tried using set() but does not guarantee proper order.
     allUniqueInstruments = []
+    instrumentChannels = {}
 
     # store streams in uniform list
     substreamList = []
@@ -2035,6 +2036,7 @@ def channelInstrumentData(
         for inst in instrumentStream:
             if inst.midiProgram not in allUniqueInstruments:
                 allUniqueInstruments.append(inst.midiProgram)
+                instrumentChannels[inst.midiProgram] = inst.midiChannel
             setAnInstrument = True
 
         if not setAnInstrument:
@@ -2050,9 +2052,14 @@ def channelInstrumentData(
 
     for i, iPgm in enumerate(allUniqueInstruments):
         # the key is the program number; the values is the start channel
+        print("WARNING: Using a monkey patched version of music21 translate.py")
         if i < len(allChannels) - 1:  # save at least one dynamic channel
-            channelByInstrument[iPgm] = allChannels[i]
-            channelsAssigned.append(allChannels[i])
+            if instrumentChannels[iPgm]:
+                channelByInstrument[iPgm] = instrumentChannels[iPgm]
+                channelsAssigned.append(instrumentChannels[iPgm])
+            else:
+                channelByInstrument[iPgm] = allChannels[i]
+                channelsAssigned.append(allChannels[i])
         else:  # just use 1, and deal with the mess: cannot allocate
             channelByInstrument[iPgm] = allChannels[0]
             channelsAssigned.append(allChannels[0])
